@@ -14,7 +14,7 @@ typedef enum {
     IS_PLAYING_MUSIC,
 } MusicMode;
 
-FMOD_SYSTEM* system;
+FMOD_SYSTEM* fmodSystem;
 FMOD_SOUND* sounds[MAX_SOUNDS];
 int soundsIndex = 0;
 FMOD_CHANNELGROUP* soundsChannelGroup;
@@ -25,25 +25,25 @@ int musicMuted = 0;
 float nextFadeInVolume = 1.0f;
 
 int initFmod(int sampleRateOverride) {
-    if (FMOD_System_Create(&system) != FMOD_OK)
+    if (FMOD_System_Create(&fmodSystem) != FMOD_OK)
         return -1;
 
     if (sampleRateOverride > 0) {
-        if (FMOD_System_SetSoftwareFormat(system, sampleRateOverride, FMOD_SPEAKERMODE_DEFAULT, 0) != FMOD_OK)
+        if (FMOD_System_SetSoftwareFormat(fmodSystem, sampleRateOverride, FMOD_SPEAKERMODE_DEFAULT, 0) != FMOD_OK)
             return -1;
     }
 
-    if (FMOD_System_Init(system, MAX_CHANNELS, FMOD_INIT_NORMAL, 0) != FMOD_OK)
+    if (FMOD_System_Init(fmodSystem, MAX_CHANNELS, FMOD_INIT_NORMAL, 0) != FMOD_OK)
         return -1;
 
-    if (FMOD_System_CreateChannelGroup(system, 0, &soundsChannelGroup) != FMOD_OK)
+    if (FMOD_System_CreateChannelGroup(fmodSystem, 0, &soundsChannelGroup) != FMOD_OK)
         return -1;
 
     return 0;
 }
 
 int releaseFmod() {
-    if (FMOD_System_Release(system) != FMOD_OK)
+    if (FMOD_System_Release(fmodSystem) != FMOD_OK)
         return -1;
 
     return 0;
@@ -78,7 +78,7 @@ int muteMusic(FMOD_BOOL mute) {
 }
 
 int updateFmod() {
-    if (FMOD_System_Update(system) != FMOD_OK)
+    if (FMOD_System_Update(fmodSystem) != FMOD_OK)
         return -1;
 
     if (music) {
@@ -89,7 +89,7 @@ int updateFmod() {
         if (openState == FMOD_OPENSTATE_READY) {
             switch (musicMode) {
                 case PLAY_MUSIC_NORMAL:
-                    if (FMOD_System_PlaySound(system, music, 0, 0, &musicChannel) != FMOD_OK)
+                    if (FMOD_System_PlaySound(fmodSystem, music, 0, 0, &musicChannel) != FMOD_OK)
                         return -1;
 
                     if (musicMuted)
@@ -103,7 +103,7 @@ int updateFmod() {
                         if (fadeOutMusic() < 0)
                             return -1;
 
-                        if (FMOD_System_PlaySound(system, music, 0, 1, &musicChannel) != FMOD_OK)
+                        if (FMOD_System_PlaySound(fmodSystem, music, 0, 1, &musicChannel) != FMOD_OK)
                             return -1;
 
                         if (musicMuted)
@@ -112,7 +112,7 @@ int updateFmod() {
                         unsigned long long dspClock;
                         int rate;
 
-                        if (FMOD_System_GetSoftwareFormat(system, &rate, 0, 0) != FMOD_OK)
+                        if (FMOD_System_GetSoftwareFormat(fmodSystem, &rate, 0, 0) != FMOD_OK)
                             return -1;
                         if (FMOD_Channel_GetDSPClock(musicChannel, 0, &dspClock) != FMOD_OK)
                             return -1;
@@ -146,7 +146,7 @@ int loadSound(char* filePath) {
     ++soundsIndex;
 
     FMOD_RESULT result = FMOD_System_CreateSound(
-        system,
+        fmodSystem,
         filePath,
         FMOD_LOOP_NORMAL | FMOD_NONBLOCKING,
         0,
@@ -163,7 +163,7 @@ int playSound(int soundIndex, int loopCount, float pan) {
         return -1;
 
     FMOD_CHANNEL* channel;
-    if (FMOD_System_PlaySound(system, sounds[soundIndex], soundsChannelGroup, 1, &channel) != FMOD_OK)
+    if (FMOD_System_PlaySound(fmodSystem, sounds[soundIndex], soundsChannelGroup, 1, &channel) != FMOD_OK)
         return -1;
 
     if (FMOD_Channel_SetLoopCount(channel, loopCount) != FMOD_OK)
@@ -185,13 +185,13 @@ int playSound(int soundIndex, int loopCount, float pan) {
 int fadeOutChannel(int channelIndex) {
     FMOD_CHANNEL* channel;
 
-    if (FMOD_System_GetChannel(system, channelIndex, &channel) != FMOD_OK)
+    if (FMOD_System_GetChannel(fmodSystem, channelIndex, &channel) != FMOD_OK)
         return -1;
 
     unsigned long long dspClock;
     int rate;
 
-    if (FMOD_System_GetSoftwareFormat(system, &rate, 0, 0) != FMOD_OK)
+    if (FMOD_System_GetSoftwareFormat(fmodSystem, &rate, 0, 0) != FMOD_OK)
         return -1;
     if (FMOD_Channel_GetDSPClock(channel, 0, &dspClock) != FMOD_OK)
         return -1;
@@ -211,7 +211,7 @@ int fadeOutChannel(int channelIndex) {
 int stopChannel(int channelIndex) {
     FMOD_CHANNEL* channel;
 
-    if (FMOD_System_GetChannel(system, channelIndex, &channel) != FMOD_OK)
+    if (FMOD_System_GetChannel(fmodSystem, channelIndex, &channel) != FMOD_OK)
         return -1;
 
     if (FMOD_Channel_Stop(channel) != FMOD_OK)
@@ -224,7 +224,7 @@ int playMusic(char* filePath) {
     if (musicChannel)
         FMOD_Channel_Stop(musicChannel);
 
-    if (FMOD_System_CreateStream(system, filePath, FMOD_LOOP_NORMAL | FMOD_NONBLOCKING, 0, &music) != FMOD_OK)
+    if (FMOD_System_CreateStream(fmodSystem, filePath, FMOD_LOOP_NORMAL | FMOD_NONBLOCKING, 0, &music) != FMOD_OK)
         return -1;
     musicMode = PLAY_MUSIC_NORMAL;
 
@@ -238,7 +238,7 @@ int fadeOutMusic() {
     unsigned long long dspClock;
     int rate;
 
-    if (FMOD_System_GetSoftwareFormat(system, &rate, 0, 0) != FMOD_OK)
+    if (FMOD_System_GetSoftwareFormat(fmodSystem, &rate, 0, 0) != FMOD_OK)
         return -1;
     if (FMOD_Channel_GetDSPClock(musicChannel, 0, &dspClock) != FMOD_OK)
         return -1;
@@ -256,7 +256,7 @@ int fadeOutMusic() {
 }
 
 int fadeInMusic(char* filePath, float musicVolume) {
-    if (FMOD_System_CreateStream(system, filePath, FMOD_LOOP_NORMAL | FMOD_NONBLOCKING, 0, &music) != FMOD_OK)
+    if (FMOD_System_CreateStream(fmodSystem, filePath, FMOD_LOOP_NORMAL | FMOD_NONBLOCKING, 0, &music) != FMOD_OK)
         return -1;
     musicMode = PLAY_MUSIC_FADE_IN;
 
@@ -305,7 +305,7 @@ int setLoopCount(int channelIndex, int loopCount) {
         return -1;
 
     FMOD_CHANNEL* channel;
-    if (FMOD_System_GetChannel(system, channelIndex, &channel) != FMOD_OK)
+    if (FMOD_System_GetChannel(fmodSystem, channelIndex, &channel) != FMOD_OK)
         return -1;
 
     if (FMOD_Channel_SetLoopCount(channel, loopCount) != FMOD_OK)
@@ -335,7 +335,7 @@ int rampMusicToNormalVolume() {
     unsigned long long dspClock;
     int rate;
 
-    if (FMOD_System_GetSoftwareFormat(system, &rate, 0, 0) != FMOD_OK)
+    if (FMOD_System_GetSoftwareFormat(fmodSystem, &rate, 0, 0) != FMOD_OK)
         return -1;
     if (FMOD_Channel_GetDSPClock(musicChannel, 0, &dspClock) != FMOD_OK)
         return -1;
@@ -353,7 +353,7 @@ int rampMusicToNormalVolume() {
 int pauseAudio(FMOD_BOOL paused) {
     FMOD_CHANNELGROUP* masterChannelGroup;
 
-    if (FMOD_System_GetMasterChannelGroup(system, &masterChannelGroup) != FMOD_OK)
+    if (FMOD_System_GetMasterChannelGroup(fmodSystem, &masterChannelGroup) != FMOD_OK)
         return -1;
     if (FMOD_ChannelGroup_SetPaused(masterChannelGroup, paused) != FMOD_OK)
         return -1;
@@ -366,7 +366,7 @@ int pauseAudio(FMOD_BOOL paused) {
 int stopAudio() {
     FMOD_CHANNELGROUP* masterChannelGroup;
 
-    if (FMOD_System_GetMasterChannelGroup(system, &masterChannelGroup) != FMOD_OK)
+    if (FMOD_System_GetMasterChannelGroup(fmodSystem, &masterChannelGroup) != FMOD_OK)
         return -1;
     if (FMOD_ChannelGroup_Stop(masterChannelGroup) != FMOD_OK)
         return -1;
