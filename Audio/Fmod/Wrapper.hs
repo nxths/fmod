@@ -32,27 +32,27 @@ import Audio.Fmod.Types
 import Audio.Pan
 import Audio.Volume
 
-foreign import ccall safe "fmod_wrapper.h initFmod" c_initFmod :: CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h releaseFmod" c_releaseFmod :: IO CInt
-foreign import ccall safe "fmod_wrapper.h updateFmod" c_updateFmod :: IO CInt
-foreign import ccall safe "fmod_wrapper.h loadSound" c_loadSound :: CString -> IO CInt
-foreign import ccall safe "fmod_wrapper.h playSound" c_playSound :: CInt -> CInt -> CFloat -> IO CInt
-foreign import ccall safe "fmod_wrapper.h setLoopCount" c_setLoopCount :: CInt -> CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h fadeOutChannel" c_fadeOutChannel :: CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h stopChannel" c_stopChannel :: CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h playMusic" c_playMusic :: CString -> IO CInt
-foreign import ccall safe "fmod_wrapper.h fadeOutMusic" c_fadeOutMusic :: IO CInt
-foreign import ccall safe "fmod_wrapper.h fadeInMusic" c_fadeInMusic :: CString -> CFloat -> IO CInt
-foreign import ccall safe "fmod_wrapper.h stopMusic" c_stopMusic :: IO CInt
-foreign import ccall safe "fmod_wrapper.h muteMusic" c_muteMusic :: CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h isMusicPlaying" c_isMusicPlaying :: IO CInt
-foreign import ccall safe "fmod_wrapper.h musicPosition" c_musicPosition :: IO CUInt
-foreign import ccall safe "fmod_wrapper.h setMusicPosition" c_setMusicPosition :: CUInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h setSoundVolume" c_setSoundVolume :: CFloat -> IO CInt
-foreign import ccall safe "fmod_wrapper.h setMusicVolume" c_setMusicVolume :: CFloat -> IO CInt
-foreign import ccall safe "fmod_wrapper.h rampMusicToNormalVolume" c_rampMusicToNormalVolume :: IO CInt
-foreign import ccall safe "fmod_wrapper.h pauseAudio" c_pauseAudio :: CInt -> IO CInt
-foreign import ccall safe "fmod_wrapper.h stopAudio" c_stopAudio :: IO CInt
+foreign import ccall "initFmod" c_initFmod :: CInt -> IO CInt
+foreign import ccall "releaseFmod" c_releaseFmod :: IO CInt
+foreign import ccall "updateFmod" c_updateFmod :: IO CInt
+foreign import ccall "loadSound" c_loadSound :: CString -> IO CInt
+foreign import ccall "playSound" c_playSound :: CInt -> CInt -> CFloat -> IO CInt
+foreign import ccall "setLoopCount" c_setLoopCount :: CInt -> CInt -> IO CInt
+foreign import ccall "fadeOutChannel" c_fadeOutChannel :: CInt -> IO CInt
+foreign import ccall "stopChannel" c_stopChannel :: CInt -> IO CInt
+foreign import ccall "playMusic" c_playMusic :: CString -> IO CInt
+foreign import ccall "fadeOutMusic" c_fadeOutMusic :: IO CInt
+foreign import ccall "fadeInMusic" c_fadeInMusic :: CString -> CFloat -> IO CInt
+foreign import ccall "stopMusic" c_stopMusic :: IO CInt
+foreign import ccall "muteMusic" c_muteMusic :: CInt -> IO CInt
+foreign import ccall "isMusicPlaying" c_isMusicPlaying :: IO CInt
+foreign import ccall "musicPosition" c_musicPosition :: IO CUInt
+foreign import ccall "setMusicPosition" c_setMusicPosition :: CUInt -> IO CInt
+foreign import ccall "setSoundVolume" c_setSoundVolume :: CFloat -> IO CInt
+foreign import ccall "setMusicVolume" c_setMusicVolume :: CFloat -> IO CInt
+foreign import ccall "rampMusicToNormalVolume" c_rampMusicToNormalVolume :: IO CInt
+foreign import ccall "pauseAudio" c_pauseAudio :: CInt -> IO CInt
+foreign import ccall "stopAudio" c_stopAudio :: IO CInt
 
 initFmod :: MonadIO m => Int -> m FmodResult
 initFmod sampleRateOverride = initFmodResult <$> liftIO (c_initFmod sampleRateOverride')
