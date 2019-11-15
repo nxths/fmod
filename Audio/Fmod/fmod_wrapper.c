@@ -341,7 +341,10 @@ int rampMusicToNormalVolume() {
         return -1;
 
     unsigned long long offset = rate * MUSIC_RAMP_TO_NORMAL_SECS;
+    unsigned long long fadeInOffset = rate * MUSIC_FADE_IN_SECS;
 
+    if (FMOD_Channel_RemoveFadePoints(musicChannel, dspClock, dspClock + fadeInOffset) != FMOD_OK)
+        return -1;
     if (FMOD_Channel_AddFadePoint(musicChannel, dspClock, nextFadeInVolume) != FMOD_OK)
         return -1;
     if (FMOD_Channel_AddFadePoint(musicChannel, dspClock + offset, 1.0) != FMOD_OK)
